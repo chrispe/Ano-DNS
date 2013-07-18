@@ -24,12 +24,23 @@ real DNS server provider what he/she visits.
 
 int main( int argc , char *argv[])
 {
-    // Get the DNS servers from the resolv.conf file
+	unsigned short port = DNS_DEFAULT_PORT;
+
+	if(argc==3 && strcmp(argv[1],"-p")==0){
+		port = atoi(argv[2]);
+		if(port==0){
+			port = DNS_DEFAULT_PORT;
+			fprintf(stdout,"Invalid port, will use the default DNS port (53).\n");
+		}
+	}
+
+    // Get the DNS servers from the resolv.conf file.
+    // (Some servers are going to be added by default).
     get_dns_servers();
      
     // Start listening to the given port for any UDP packet
     // (The followng function includes the query processing).
-    udp_listen(DNS_DEFAULT_PORT);
+    udp_listen(port);
  
     return 0;
 }
