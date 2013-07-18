@@ -20,16 +20,16 @@ real DNS server provider what he/she visits.
 
 #include "udp_listener.h" 
 
-#define DNS_DEFAULT_PORT 53
+#define DEFAULT_DNS_PORT 53
 
 int main( int argc , char *argv[])
 {
-	unsigned short port = DNS_DEFAULT_PORT;
+	unsigned short port = DEFAULT_DNS_PORT;
 
 	if(argc==3 && strcmp(argv[1],"-p")==0){
 		port = atoi(argv[2]);
 		if(port==0){
-			port = DNS_DEFAULT_PORT;
+			port = DEFAULT_DNS_PORT;
 			fprintf(stdout,"Invalid port, will use the default DNS port (53).\n");
 		}
 	}
