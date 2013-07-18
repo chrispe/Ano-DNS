@@ -1,7 +1,7 @@
-Ano-DNS
-=======
+Ano-DNS <small>0.1</small>
+===========
 
-<h3>Developed by Chris Petropoulos</h3></br>
+<h6>Developed by Chris Petropoulos</h6></br>
 
 <h4>Description</h4>
 <p>
@@ -15,4 +15,4 @@ By this way the user can "hide" to the</br>
 real DNS server provider what he/she visits.</br>
 
 <h4>Compile</h4>
-<p>To compile just use Make</p>
+<p>To compile just use Makefile.</p>
