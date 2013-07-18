@@ -1,3 +1,18 @@
+/*
+* * * * * * * * * * * * * * * * * * * * * *
+*                                         *
+*                 Ano-DNS                 *
+*               version 0.1               *
+*                                         *
+*    Developed by Christos Petropoulos    *
+*                                         *
+* * * * * * * * * * * * * * * * * * * * * *
+
+This header file includes some system libraries
+It's all collected here so no big space just for
+including libraries.
+*/
+
 #include <stdio.h> 
 #include <stdlib.h>
 #include <unistd.h>

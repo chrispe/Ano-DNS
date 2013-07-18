@@ -2,17 +2,18 @@
 
 #define MAX_SEND_TRIES 10
 
+/* 	An array including some dns servers
+	which will be used for making the queries. */
 char dns_servers[10][100];
-int dns_server_count = 0;
-
+ 
 /**
  * @brief Handles the query processing being under a thread.
  * @param thread_parameters : The thread parameters (query parameters).
  */
 void * handle_query (void * thread_parameters){
-  	query_thread_params * query_params = (query_thread_params *)thread_parameters;
-  	ngethostbyname(query_params->domain,T_A,&(query_params->sock),query_params->addr,query_params->len,query_params->query_id);
- 	pthread_exit(NULL);
+	query_thread_params * query_params = (query_thread_params *)thread_parameters;
+	process_query(query_params->domain,T_A,&(query_params->sock),query_params->addr,query_params->len,query_params->query_id);
+	pthread_exit(NULL);
 }
 
 /**
@@ -60,7 +61,7 @@ u_char * get_query_domain(unsigned char * reader,unsigned char * buffer)
  * back to the client the received response.
  * @param thread_parameters : The thread parameters (query parameters).
  */
-void ngethostbyname(unsigned char * host , int query_type, int * sock, struct sockaddr_in * c_addr,unsigned int len, unsigned short q_id)
+void process_query(unsigned char * host , int query_type, int * sock, struct sockaddr_in * c_addr,unsigned int len, unsigned short q_id)
 {
     unsigned char buf[65536], * qname;
     int i , s;
@@ -77,7 +78,7 @@ void ngethostbyname(unsigned char * host , int query_type, int * sock, struct so
  	// Setting up the destination of the UDP message.
     dest.sin_family = AF_INET;
     dest.sin_port = htons(53);
-    dest.sin_addr.s_addr = inet_addr(dns_servers[0]); //dns servers
+    dest.sin_addr.s_addr = inet_addr(dns_servers[0]);
  
     //Set the DNS structure to standard queries
     dns = (struct DNS_HEADER *)&buf;
@@ -99,7 +100,7 @@ void ngethostbyname(unsigned char * host , int query_type, int * sock, struct so
  
     // Setting up the DNS query to send.
     qname =(unsigned char*)&buf[sizeof(struct DNS_HEADER)];
-    ChangetoDnsNameFormat(qname , host);
+    host_to_dns_format(qname , host);
     qinfo =(struct QUESTION*)&buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 1)];
     qinfo->qtype = htons( query_type ); // Type of the query
     qinfo->qclass = htons(1); 			// For the internet
@@ -141,115 +142,63 @@ void send_udp_packet(int * sock, char * content,unsigned int size, struct sockad
 	}
 }
 
- 
-/*
- *
- * */
-u_char* ReadName(unsigned char* reader,unsigned char* buffer,int* count)
-{
-    unsigned char *name;
-    unsigned int p=0,jumped=0,offset;
-    int i , j;
- 
-    *count = 1;
-    name = (unsigned char*)malloc(256);
- 
-    name[0]='\0';
- 
-    //read the names in 3www6google3com format
-    while(*reader!=0)
-    {
-        if(*reader>=192)
-        {
-            offset = (*reader)*256 + *(reader+1) - 49152; //49152 = 11000000 00000000 ;)
-            reader = buffer + offset - 1;
-            jumped = 1; //we have jumped to another location so counting wont go up!
-        }
-        else
-        {
-            name[p++]=*reader;
-        }
- 
-        reader = reader+1;
- 
-        if(jumped==0)
-        {
-            *count = *count + 1; //if we havent jumped to another location then we can count up
-        }
-    }
- 
-    name[p]='\0'; //string complete
-    if(jumped==1)
-    {
-        *count = *count + 1; //number of steps we actually moved forward in the packet
-    }
- 
-    //now convert 3www6google3com0 to www.google.com
-    for(i=0;i<(int)strlen((const char*)name);i++)
-    {
-        p=name[i];
-        for(j=0;j<(int)p;j++)
-        {
-            name[i]=name[i+1];
-            i=i+1;
-        }
-        name[i]='.';
-    }
-    name[i-1]='\0'; //remove the last dot
-    return name;
-}
- 
-/*
- * Get the DNS servers from /etc/resolv.conf file on Linux
- * */
-void get_dns_servers()
+/**
+ * @brief Gets the default DNS servers (works only on linux).
+ * @return: Returns (-1) if the function was unable to retrieve the dns servers. 
+ * else returns zero.
+ */
+unsigned short get_dns_servers()
 {
     FILE *fp;
     char line[200] , *p;
+    unsigned short dns_server_count = 0;
+
+    // Opening the file which contains the DNS servers.
     if((fp = fopen("/etc/resolv.conf" , "r")) == NULL)
+        fprintf(stdout,"Failed opening /etc/resolv.conf file \n");
+
+    // We read by 200 chars each time. 
+    while(fgets(line , 200 , fp) && dns_server_count<7)
     {
-        printf("Failed opening /etc/resolv.conf file \n");
-    }
-     
-    while(fgets(line , 200 , fp))
-    {
+    	// If starts with '#', it's a comment so we skip the line
         if(line[0] == '#')
-        {
             continue;
-        }
-        if(strncmp(line , "nameserver" , 10) == 0)
-        {
+    
+        if(strncmp(line , "nameserver" , 10) == 0){
             p = strtok(line , " ");
             p = strtok(NULL , " ");
-             
-            //p now is the dns ip :)
-            //????
+            p[strlen(p)-1] = '\0';
+            strcpy(dns_servers[2+dns_server_count],p);
+            fprintf(stdout,"Added DNS server (%s).\n",p);
+            dns_server_count++;
         }
     }
      
-    strcpy(dns_servers[0] , "208.67.222.222");
-    strcpy(dns_servers[1] , "208.67.220.220");
+    // Copying some default DNS server IP 
+    // (Google, you may want to change that ;)). 
+    fprintf(stdout,"Added the default DNS servers.\n");
+    strcpy(dns_servers[0] , "8.8.8.8");
+    strcpy(dns_servers[1] , "8.8.8.4");
+    dns_server_count += 2;
+
+    return dns_server_count;
 }
- 
-/*
- * This will convert www.google.com to 3www6google3com
- * got it :)
- * */
-void ChangetoDnsNameFormat(unsigned char* dns,unsigned char* host)
+
+/**
+ * @brief Converts from the dot format to the number format.
+ * @param dns: the output we are going to use for making the query.
+ * @param host: the original name of the host (which uses dots).
+ */
+void host_to_dns_format(unsigned char* dns,unsigned char* host)
 {
-    int lock = 0 , i;
+    unsigned int lock = 0 , i;
     strcat((char*)host,".");
-     
-    for(i = 0 ; i < strlen((char*)host) ; i++)
-    {
-        if(host[i]=='.')
-        {
+    for(i = 0 ; i < strlen((char*)host) ; i++){
+        if(host[i]=='.'){
             *dns++ = i-lock;
             for(;lock<i;lock++)
-            {
                 *dns++=host[lock];
-            }
-            lock++; //or lock=i+1;
+            lock++;
         }
     }
     *dns++='\0';

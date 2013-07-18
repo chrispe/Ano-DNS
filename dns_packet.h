@@ -1,12 +1,12 @@
 /*
-===========================================
-=                                         =
-=                 Ano-DNS                 =
-=               version 0.1               =
-=                                         =
-=    Developed by Christos Petropoulos    =
-=                                         =
-===========================================
+* * * * * * * * * * * * * * * * * * * * * *
+*                                         *
+*                 Ano-DNS                 *
+*               version 0.1               *
+*                                         *
+*    Developed by Christos Petropoulos    *
+*                                         *
+* * * * * * * * * * * * * * * * * * * * * *
 
 This header file is used to represent the
 structures used to store a DNS packet

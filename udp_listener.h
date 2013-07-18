@@ -1,16 +1,15 @@
 /*
-===========================================
-=                                         =
-=                 Ano-DNS                 =
-=               version 0.1               =
-=                                         =
-=    Developed by Christos Petropoulos    =
-=                                         =
-===========================================
+* * * * * * * * * * * * * * * * * * * * * *
+*                                         *
+*                 Ano-DNS                 *
+*               version 0.1               *
+*                                         *
+*    Developed by Christos Petropoulos    *
+*                                         *
+* * * * * * * * * * * * * * * * * * * * * *
 
 This header file includes the structures and
-functions used for receiving and sending packets
-using the UDP protocol.
+functions used for receiving UDP packets.
 */
 
 #include "sys_libs.h"
