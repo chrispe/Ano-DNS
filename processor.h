@@ -17,30 +17,33 @@ for processing the query the client has sent.
 #include "dns_packet.h"
 #endif
 
+#define MAX_DNS_SERVERS 10
+#define MAX_SEND_TRIES 10
+
 /* 	An array including some dns servers
 	which will be used for making the queries. */
-extern char dns_servers[10][100];
+extern char dns_servers[MAX_DNS_SERVERS][100];
   
 /**
  * @brief Sends the query to another remote DNS server and then sends
  * back to the client the received response.
  * @param thread_parameters : The thread parameters (query parameters).
  */
-void process_query (unsigned char *host , int query_type, int * sock, struct sockaddr_in * c_addr,unsigned int len,unsigned short q_id);
+void process_query (unsigned char *host , int query_type, int * sock, struct sockaddr_in * c_addr,unsigned int len, unsigned short q_id);
 
 /**
  * @brief Converts from the dot format to the number format.
  * @param dns: the output we are going to use for making the query.
  * @param host: the original name of the host (which uses dots).
  */
-void host_to_dns_format (unsigned char*,unsigned char*);
+void host_to_dns_format (unsigned char *, unsigned char *);
  
 /**
  * @brief Gets the default DNS servers (works only on linux).
  * @return: Returns (-1) if the function was unable to retrieve the dns servers. 
  * else returns zero.
  */ 
-unsigned short  get_dns_servers();
+unsigned short  get_dns_servers(void);
 
 /**
  * @brief Handles the query processing being under a thread.
@@ -54,7 +57,7 @@ void * handle_query(void * thread_parameter);
  * @param buffer : The pointer ro the buffer (where all the packet data is).
  * @return: A pointer to a new string with the valid domain name.
  */
-u_char * get_query_domain(unsigned char * reader,unsigned char * buffer);
+u_char * get_query_domain(unsigned char * reader, unsigned char * buffer);
 
 /**
  * @brief Sends the packet using the stantard sendto function but 

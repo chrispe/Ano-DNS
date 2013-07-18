@@ -1,10 +1,8 @@
 #include "processor.h"
 
-#define MAX_SEND_TRIES 10
-
 /*  An array including some dns servers
     which will be used for making the queries. */
-char dns_servers[10][100];
+char dns_servers[MAX_DNS_SERVERS][100];
  
 /**
  * @brief Handles the query processing being under a thread.
@@ -158,7 +156,7 @@ unsigned short get_dns_servers()
         fprintf(stdout,"Failed opening /etc/resolv.conf file \n");
 
     // We read by 200 chars each time. 
-    while(fgets(line , 200 , fp) && dns_server_count<7)
+    while(fgets(line , 200 , fp) && dns_server_count<MAX_DNS_SERVERS-3)
     {
     	// If starts with '#', it's a comment so we skip the line
         if(line[0] == '#')

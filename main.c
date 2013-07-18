@@ -24,7 +24,7 @@ real DNS server provider what he/she visits.
 
 int main( int argc , char *argv[])
 {
-    //Get the DNS servers from the resolv.conf file
+    // Get the DNS servers from the resolv.conf file
     get_dns_servers();
      
     // Start listening to the given port for any UDP packet
