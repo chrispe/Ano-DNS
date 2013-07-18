@@ -1,6 +1,6 @@
 # This is the makefile for the linux version of the project Ano-DNS.
 
-LINKED_OBJ = main.o proc.o udplin.o
+LINKED_OBJ = dnss.o proc.o udplin.o
 LIBS = -pthread
 OUTPUT = ./dns_server
 
@@ -11,8 +11,8 @@ out: $(LINKED_OBJ)
 	@echo Cleaning up...
 	@rm -f $(LINKED_OBJ)
 	@echo Done.
-main.o: main.c
-	@gcc -o main.o -c main.c 
+dnss.o: dns_server.c
+	@gcc -o dnss.o -c dns_server.c 
 proc.o: processor.h processor.c sys_libs.h
 	@gcc -o proc.o -c processor.c 
 udplin.o: udp_listener.h udp_listener.c dns_packet.h sys_libs.h

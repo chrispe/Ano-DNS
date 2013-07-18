@@ -36,7 +36,7 @@ void udp_listen(unsigned short listening_port){
     return;
   }
 
-  printf("Started listening for UDP packets on port (%d).\n",listening_port);
+  printf("Started listening for UDP packets on port (%d)...\n",listening_port);
   fflush(stdout);
 
   while(1){
