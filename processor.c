@@ -2,8 +2,8 @@
 
 #define MAX_SEND_TRIES 10
 
-/* 	An array including some dns servers
-	which will be used for making the queries. */
+/*  An array including some dns servers
+    which will be used for making the queries. */
 char dns_servers[10][100];
  
 /**
@@ -11,9 +11,9 @@ char dns_servers[10][100];
  * @param thread_parameters : The thread parameters (query parameters).
  */
 void * handle_query (void * thread_parameters){
-	query_thread_params * query_params = (query_thread_params *)thread_parameters;
-	process_query(query_params->domain,T_A,&(query_params->sock),query_params->addr,query_params->len,query_params->query_id);
-	pthread_exit(NULL);
+    query_thread_params * query_params = (query_thread_params *)thread_parameters;
+    process_query(query_params->domain,T_A,&(query_params->sock),query_params->addr,query_params->len,query_params->query_id);
+    pthread_exit(NULL);
 }
 
 /**
@@ -84,7 +84,7 @@ void process_query(unsigned char * host , int query_type, int * sock, struct soc
     dns = (struct DNS_HEADER *)&buf;
     dns->id = (unsigned short) htons(getpid());
     dns->qr = 0; 				// This is a query
-    dns->opcode = 0; 			// This is a standard query
+    dns->opcode = 0; 			        // This is a standard query
     dns->aa = 0; 				// Not Authoritative
     dns->tc = 0; 				// This message is not truncated
     dns->rd = 1; 				// Recursion Desired
@@ -93,7 +93,7 @@ void process_query(unsigned char * host , int query_type, int * sock, struct soc
     dns->ad = 0;
     dns->cd = 0;
     dns->rcode = 0;
-    dns->q_count = htons(1);	// We have only one question
+    dns->q_count = htons(1);			// We have only one question
     dns->ans_count = 0;
     dns->auth_count = 0;
     dns->add_count = 0;
@@ -102,7 +102,7 @@ void process_query(unsigned char * host , int query_type, int * sock, struct soc
     qname =(unsigned char*)&buf[sizeof(struct DNS_HEADER)];
     host_to_dns_format(qname , host);
     qinfo =(struct QUESTION*)&buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 1)];
-    qinfo->qtype = htons( query_type ); // Type of the query
+    qinfo->qtype = htons( query_type ); 	// Type of the query
     qinfo->qclass = htons(1); 			// For the internet
  
     // Sending the query to the DNS server.
@@ -135,11 +135,11 @@ void process_query(unsigned char * host , int query_type, int * sock, struct soc
  * @param the sendto() parameters. Read sendto() documentation.
  */
 void send_udp_packet(int * sock, char * content,unsigned int size, struct sockaddr * addr, unsigned int len){
-	unsigned short tries = 0;
-	for(tries=0;tries<MAX_SEND_TRIES;tries++){
-		if(sendto(*sock,content,size,0,addr,len) >= 0)
-			return;
-	}
+    unsigned short tries = 0;
+    for(tries=0;tries<MAX_SEND_TRIES;tries++){
+        if(sendto(*sock,content,size,0,addr,len) >= 0)
+	    return;
+    }
 }
 
 /**
