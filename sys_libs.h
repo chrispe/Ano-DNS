@@ -13,19 +13,3 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <netdb.h>
-#include "udp_listener.h" 
-
-#define DNS_DEFAULT_PORT 53
-
-int main( int argc , char *argv[])
-{
-    unsigned char hostname[100];
- 
-    //Get the DNS servers from the resolv.conf file
-    get_dns_servers();
-     
-    udp_listen(DNS_DEFAULT_PORT);
- 
-    return 0;
-}
-  

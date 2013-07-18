@@ -82,9 +82,13 @@ void udp_listen(unsigned short listening_port){
     // We create the thread which handles the dns query
     query_thread = (pthread_t *)malloc(sizeof(pthread_t));
     if(query_thread==NULL)
-      printf("The DNS server can't handle more clients.\n");
+      fprintf(stdout,"Warning : The DNS server can't handle more clients.\n");
     else
       pthread_create(query_thread, NULL,&handle_query,query_params);
+
+  	if(query_params)
+  		free(query_thread);
+ 	free(id);
   }
 }
 
@@ -98,7 +102,7 @@ query_thread_params * new_query_params(){
 		return new_qtp;
 	new_qtp->domain = malloc(256);
 	new_qtp->addr = malloc(sizeof(struct sockaddr));
-	if(memerror(new_qtp,"sockaddr")){
+	if(memerror(new_qtp,"sockaddr"))
 		free(new_qtp);
 	return new_qtp;
 }
@@ -108,11 +112,13 @@ query_thread_params * new_query_params(){
  	@param q: The reference to the object we want to destroy. 
  */
 void destroy_query_params(query_thread_params * q){
-	if(q->addr)
-		free(q->addr);
-	if(q->domain)
-		free(q->domain);
-	free(q);
+	if(q){
+		if(q->addr)
+			free(q->addr);
+		if(q->domain)
+			free(q->domain);
+		free(q);
+	}
 }
 
 /**

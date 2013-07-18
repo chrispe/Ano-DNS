@@ -26,6 +26,8 @@ or else the DNS response will be ignored). The DNS header
 carries a lot of flags and parameters as can be seen below.
 For more info, look for any documentation about the DNS protocol. */
 
+#define DNS_PACKET_SRUCT
+
 struct DNS_HEADER
 {
     /* Variable */              /* Description */
@@ -100,3 +102,14 @@ typedef struct
     unsigned char * name;
     struct QUESTION * ques;
 } QUERY;
+
+/*  This struct includes the variables needed
+    to complete the query under a new thread. */
+typedef struct query_thread_params {
+  int sock;                     // the socket used with the client
+  unsigned int len;             // the address length
+  struct QUESTION info;         // the question of the query
+  char * domain;                // the domain name of the query
+  struct sockaddr_in * addr;    // the addr of the client
+  unsigned short query_id;      // the id of the query
+}query_thread_params;

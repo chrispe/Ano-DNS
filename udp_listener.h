@@ -13,6 +13,7 @@ functions used for receiving and sending packets
 using the UDP protocol.
 */
 
+#include "sys_libs.h"
 #include "dns_packet.h"
 #include "processor.h"
 
@@ -22,17 +23,6 @@ using the UDP protocol.
  * @param listening_port : The port that we are listening to.
  */
 void udp_listen(unsigned short listening_port);
-
-/* 	This struct includes the variables needed
-	to complete the query under a new thread. */
-typedef struct query_thread_params {
-  int sock;						// the socket used with the client
-  unsigned int len;				// the address length
-  struct QUESTION info;			// the question of the query
-  char * domain;				// the domain name of the query
-  struct sockaddr_in * addr;	// the addr of the client
-  unsigned short query_id;		// the id of the query
-}query_thread_params;
 
 /**
  * @brief Allocates and creates a new query_thread_params.
@@ -44,7 +34,7 @@ query_thread_params * new_query_params(void);
  *	@brief Destroys the query_thread_params object. 
  	@param q: The reference to the object we want to destroy. 
  */
-void destroy_query_params(query_thread_params * q){
+void destroy_query_params(query_thread_params * q);
 
 /**
  * 	@brief Checks if the reference points to NULL.
