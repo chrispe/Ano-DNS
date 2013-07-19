@@ -36,7 +36,12 @@ void udp_listen(unsigned short listening_port){
     return;
   }
 
-  printf("Started listening for UDP packets on port (%d)...\n",listening_port);
+  #ifdef __linux
+    printf("Started listening for UDP packets on (%s:%d)...\n",get_local_ip(),listening_port);
+  #else
+    printf("Started listening for UDP packets on (%d)...\n",listening_port);
+  #endif
+
   fflush(stdout);
 
   while(1){
@@ -122,11 +127,11 @@ void destroy_query_params(query_thread_params * q){
 }
 
 /**
- * 	@brief Checks if the reference points to NULL.
-	in case it does, an error is printed on the stdout.
-	@param p: the pointer we want to check.
-	@param obj_name: the name of object we try to allocate. 
-	@return: 1 for error, zero for no error.
+ * @brief Checks if the reference points to NULL.
+	 in case it does, an error is printed on the stdout.
+	 @param p: the pointer we want to check.
+	 @param obj_name: the name of object we try to allocate. 
+	 @return: 1 for error, zero for no error.
  */ 
 char memerror(void * p, char * obj_name){
 	if(!p){
@@ -136,3 +141,34 @@ char memerror(void * p, char * obj_name){
 	return 0;
 }
 
+/**
+ *  @brief Returns the IP address of the local host.
+    in case it does, an error is printed on the stdout.
+    @return: The IP address as a string.
+ */ 
+char * get_local_ip()
+{
+  char hostname[130];
+  struct hostent *host;
+  char * fixed_hostname;
+
+  // We get the hostname of the computer
+  gethostname(hostname, sizeof hostname);
+
+  // In the table, the entry of the external address
+  // has the name of the hostname plus ".local"
+  // So we need to create a string in that format.
+  fixed_hostname = malloc(sizeof(hostname)+7);
+  sprintf (fixed_hostname, "%s.local",hostname);
+
+  // Then by giving the right name we get the right address
+  host = gethostbyname(fixed_hostname);
+
+  if(host == NULL)
+  {
+    herror("gethostbyname");
+    return NULL;
+  }
+ 
+  return(inet_ntoa(*(struct in_addr*)host->h_addr));
+}

@@ -65,3 +65,6 @@ u_char * get_query_domain(unsigned char * reader, unsigned char * buffer);
  * @param the sendto() parameters. Read sendto() documentation.
  */
 void send_udp_packet(int * sock, char * content,unsigned int size, struct sockaddr * addr, unsigned int len);
+
+u_char* ReadName(unsigned char* reader,unsigned char* buffer,int* count);
+void ngethostbyname(unsigned char * buf , struct DNS_HEADER * dns);

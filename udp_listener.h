@@ -43,3 +43,10 @@ void destroy_query_params(query_thread_params * q);
 	@return: 1 for error, zero for no error.
  */ 
 char memerror(void * p, char * obj_name);
+
+/**
+ *  @brief Returns the IP address of the local host.
+    in case it does, an error is printed on the stdout.
+    @return: The IP address as a string.
+ */ 
+char * get_local_ip(void);
