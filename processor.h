@@ -13,6 +13,7 @@ for processing the query the client has sent.
 */
 
 #include "sys_libs.h"
+#include "binary_tree.h"
 #ifndef DNS_PACKET_SRUCT
 #include "dns_packet.h"
 #endif
@@ -20,10 +21,24 @@ for processing the query the client has sent.
 #define MAX_DNS_SERVERS 10
 #define MAX_SEND_TRIES 10
 
+typedef enum prop_type{
+	BLOCK_ITEM,
+	SERVER_ITEM,
+	NONE
+}prop_type;
+
 /* 	An array including some dns servers
 	which will be used for making the queries. */
 extern char dns_servers[MAX_DNS_SERVERS][100];
   
+/* 	An array including the domain names
+	which are blocked. When a blocked domain
+	name has been requested to be resolved,
+	we don't make the query to any DNS server.
+	We just return an answer with a user defined value. 
+*/
+extern tree_node * blocked_domains_tree;
+ 
 /**
  * @brief Sends the query to another remote DNS server and then sends
  * back to the client the received response.
@@ -68,3 +83,4 @@ void send_udp_packet(int * sock, char * content,unsigned int size, struct sockad
 
 u_char* ReadName(unsigned char* reader,unsigned char* buffer,int* count);
 void ngethostbyname(unsigned char * buf , struct DNS_HEADER * dns);
+void read_properties_file(const char * fname);

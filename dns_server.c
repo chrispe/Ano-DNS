@@ -19,7 +19,6 @@ real DNS server provider what he/she visits.
 */
 
 #include "udp_listener.h" 
-
 #define DEFAULT_DNS_PORT 53
 
 int main( int argc , char *argv[])
@@ -34,10 +33,12 @@ int main( int argc , char *argv[])
 		}
 	}
 
+	// Loading some properties.
+	read_properties_file("anodns.properties");
+
     // Get the DNS servers from the resolv.conf file.
-    // (Some servers are going to be added by default).
     get_dns_servers();
-     
+
     // Start listening to the given port for any UDP packet
     // (The followng function includes the query processing).
     udp_listen(port);

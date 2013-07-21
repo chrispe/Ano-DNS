@@ -16,7 +16,7 @@ void udp_listen(unsigned short listening_port){
 
   // Initializing the thread attributes
   pthread_attr_init(&thread_attributes);
-  pthread_attr_setdetachstate(&thread_attributes,PTHREAD_CREATE_JOINABLE);
+  pthread_attr_setdetachstate(&thread_attributes,PTHREAD_CREATE_DETACHED);
 
   // We create the socket for UDP
   if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
@@ -46,7 +46,7 @@ void udp_listen(unsigned short listening_port){
 
   while(1){
 
-  	// Set the buffer all to zero.
+    // Set the buffer all to zero.
     memset(&buffer,0,64);
 
     // Allocate space for the new query parameters.
@@ -54,7 +54,7 @@ void udp_listen(unsigned short listening_port){
     if(!query_params)
       continue;
 
-  	// Waiting for a UDP packet to arrive.
+    // Waiting for a UDP packet to arrive.
     addr_len = sizeof(struct sockaddr_in);
     if((bytes_read = recvfrom(sock,buffer,63,0,(struct sockaddr *)&client_addr,&addr_len)) == -1){
       perror("UDP read");
@@ -65,8 +65,8 @@ void udp_listen(unsigned short listening_port){
     // We copy the id of the query to a temporary variable.
     id = malloc(sizeof(unsigned short));
     if(memerror(id,"query id")){
-    	destroy_query_params(query_params);
-    	continue;
+      destroy_query_params(query_params);
+      continue;
     }
     memcpy(id,buffer,sizeof(unsigned short));
 
@@ -89,11 +89,11 @@ void udp_listen(unsigned short listening_port){
     if(query_thread==NULL)
       fprintf(stdout,"Warning : The DNS server can't handle more clients.\n");
     else
-      pthread_create(query_thread, NULL,&handle_query,query_params);
+      pthread_create(query_thread,&thread_attributes,&handle_query,query_params);
 
-  	if(query_params)
-  		free(query_thread);
- 	free(id);
+    if(query_thread)
+      free(query_thread);
+    free(id);
   }
 }
 
@@ -102,43 +102,43 @@ void udp_listen(unsigned short listening_port){
  * @return A pointer in case the allocation was successful else NULL.
  */
 query_thread_params * new_query_params(){
-	query_thread_params * new_qtp = (query_thread_params *)malloc(sizeof(query_thread_params));
-	if(memerror(new_qtp,"query params"))
-		return new_qtp;
-	new_qtp->domain = malloc(256);
-	new_qtp->addr = malloc(sizeof(struct sockaddr));
-	if(memerror(new_qtp,"sockaddr"))
-		free(new_qtp);
-	return new_qtp;
+  query_thread_params * new_qtp = (query_thread_params *)malloc(sizeof(query_thread_params));
+  if(memerror(new_qtp,"query params"))
+    return new_qtp;
+  new_qtp->domain = malloc(256);
+  new_qtp->addr = malloc(sizeof(struct sockaddr));
+  if(memerror(new_qtp,"sockaddr"))
+    free(new_qtp);
+  return new_qtp;
 }
 
 /**
- *	@brief Destroys the query_thread_params object. 
- 	@param q: The reference to the object we want to destroy. 
+ *  @brief Destroys the query_thread_params object. 
+  @param q: The reference to the object we want to destroy. 
  */
 void destroy_query_params(query_thread_params * q){
-	if(q){
-		if(q->addr)
-			free(q->addr);
-		if(q->domain)
-			free(q->domain);
-		free(q);
-	}
+  if(q){
+    if(q->addr)
+      free(q->addr);
+    if(q->domain)
+      free(q->domain);
+    free(q);
+  }
 }
 
 /**
  * @brief Checks if the reference points to NULL.
-	 in case it does, an error is printed on the stdout.
-	 @param p: the pointer we want to check.
-	 @param obj_name: the name of object we try to allocate. 
-	 @return: 1 for error, zero for no error.
+   in case it does, an error is printed on the stdout.
+   @param p: the pointer we want to check.
+   @param obj_name: the name of object we try to allocate. 
+   @return: 1 for error, zero for no error.
  */ 
 char memerror(void * p, char * obj_name){
-	if(!p){
-		fprintf(stdout,"Memory allocation (malloc) failed for : %s\n",obj_name);
-		return 1;
-	}
-	return 0;
+  if(!p){
+    fprintf(stdout,"Memory allocation (malloc) failed for : %s\n",obj_name);
+    return 1;
+  }
+  return 0;
 }
 
 /**

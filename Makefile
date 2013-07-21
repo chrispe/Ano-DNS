@@ -1,8 +1,8 @@
 # This is the makefile for the linux version of the project Ano-DNS.
 
-LINKED_OBJ = dnss.o proc.o udplin.o
+LINKED_OBJ = dnss.o proc.o udplin.o btr.o
 LIBS = -pthread
-OUTPUT = ./dns_server
+OUTPUT = ./bin/dns_server
 
 all: out 
 out: $(LINKED_OBJ)
@@ -11,6 +11,8 @@ out: $(LINKED_OBJ)
 	@echo Cleaning up...
 	@rm -f $(LINKED_OBJ)
 	@echo Done.
+btr.o: binary_tree.h binary_tree.c
+	@gcc -o btr.o -c binary_tree.c
 dnss.o: dns_server.c
 	@gcc -o dnss.o -c dns_server.c 
 proc.o: processor.h processor.c sys_libs.h
