@@ -1,19 +1,23 @@
 #include "binary_tree.h"
- 
-void print_tree(tree_node * root){
-	if(root->lc)
-		print_tree(root->lc);	
-	printf("%s\n",root->name);
-	if(root->rc)
-		print_tree(root->rc);
-}
 
-tree_node * tree_insert_node(tree_node * root, char * name, void * data_ptr, tree_node ** found){
+/**
+ * @brief Inserts a new node to the binary search tree.
+   @param root: The root pointer of the binary search tree.
+   @param name: The name (aka key) of the tree node.
+   @param data_ptr: A pointer to the data that will be copied to the new node.
+   @param found: A tree node, in case of not NULL the value of it points
+   to the new allocated node.
+   @return: The new binary search tree.
+ */ 
+tree_node * tree_insert_node(tree_node * root,const char * name, void * data_ptr, tree_node ** found){
 	tree_node * new_node = create_tree_node(name,data_ptr);
 	tree_node * visitor = root;
 	tree_node * previous = NULL;
 	char is_left_child = 0;
 	short int comparison;
+
+	if(!new_node)
+		return root;
 
 	while(visitor){
 		previous = visitor;
@@ -45,7 +49,13 @@ tree_node * tree_insert_node(tree_node * root, char * name, void * data_ptr, tre
 	return root;
 }
 
-tree_node * tree_lookup(tree_node * root, char * name){
+/**
+ * @brief Looks up for a node in the binary search tree that has a specific name.
+   @param root: The pointer to the root the binary search tree.
+   @param name: The name (aka key) of the node we are looking for.
+   @return: The pointer to the founded node. In case of not existing, returns NULL.
+ */ 
+tree_node * tree_lookup(tree_node * root,const char * name){
 	tree_node * visitor = root;
 	short int comparison;
 
@@ -61,7 +71,14 @@ tree_node * tree_lookup(tree_node * root, char * name){
 	return visitor;
 }
 
-tree_node * create_tree_node(char * name, void * data_ptr){
+/**
+ * @brief Creates a new tree node (by doing the required allocations).
+   @param name: The name of the node.
+   @param ptr: The pointer to the data that will be copied to the node.
+   @param data_ptr: A pointer to the data that will be copied to the new node.
+   @return: The new allocated tree node.
+ */ 
+tree_node * create_tree_node(const char * name, void * data_ptr){
 	tree_node * new_node = (tree_node *)malloc(sizeof(tree_node));
 
 	if(memerror(new_node,"new tree node"))

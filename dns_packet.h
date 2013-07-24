@@ -112,4 +112,5 @@ typedef struct query_thread_params {
   char * domain;                // the domain name of the query
   struct sockaddr_in * addr;    // the addr of the client
   unsigned short query_id;      // the id of the query
+  char * dns_server;            // the dns server which will handle the query
 }query_thread_params;

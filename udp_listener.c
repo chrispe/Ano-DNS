@@ -6,22 +6,26 @@
  * @param listening_port : The port that we are listening to.
  */
 void udp_listen(unsigned short listening_port){
-  int sock,addr_len,bytes_read;
+  int sock;
   char buffer[64];
-  struct sockaddr_in server_addr , client_addr;
-  pthread_t * query_thread = NULL;
-  pthread_attr_t thread_attributes;
+  unsigned int addr_len, bytes_read;
+  struct sockaddr_in server_addr, client_addr;
   unsigned short * id = NULL;
   unsigned char * qname = NULL;
+  pthread_t * query_thread = NULL;
+  pthread_attr_t thread_attributes;
 
   // Initializing the thread attributes
   pthread_attr_init(&thread_attributes);
   pthread_attr_setdetachstate(&thread_attributes,PTHREAD_CREATE_DETACHED);
 
+  printf("Opening UDP socket on port %d...",listening_port);
+
   // We create the socket for UDP
   if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+    printf("(FAILED)\n\t");
     perror("opening UDP socket");
-    exit(1);
+    return;
   }
 
   // We set parameters for the connection
@@ -31,15 +35,16 @@ void udp_listen(unsigned short listening_port){
   server_addr.sin_addr.s_addr = INADDR_ANY;
 
   // Bind it to all the available interfaces
-  if (bind(sock,(struct sockaddr *)&server_addr,sizeof(struct sockaddr)) == -1) {
+  if(bind(sock,(struct sockaddr *)&server_addr,sizeof(struct sockaddr)) == -1) {
+    printf("(FAILED)\n\t");
     perror("UDP Bind");
     return;
   }
 
   #ifdef __linux
-    printf("Started listening for UDP packets on (%s:%d)...\n",get_local_ip(),listening_port);
+    printf("(DONE)\nStarted listening for UDP packets on %s:%d...\n",get_local_ip(),listening_port);
   #else
-    printf("Started listening for UDP packets on (%d)...\n",listening_port);
+    printf("(DONE)\nStarted listening for UDP packets on %d...\n",listening_port);
   #endif
 
   fflush(stdout);
@@ -83,16 +88,14 @@ void udp_listen(unsigned short listening_port){
     query_params->info.qtype = buffer[sizeof(struct DNS_HEADER) + (strlen((const char *)qname))+1];
     memcpy(query_params->addr,&client_addr,sizeof(struct sockaddr));
     query_params->query_id  = *id;
+    strcpy(query_params->dns_server,dns_servers[0]);
 
     // We create the thread which handles the dns query
     query_thread = (pthread_t *)malloc(sizeof(pthread_t));
-    if(query_thread==NULL)
-      fprintf(stdout,"Warning : The DNS server can't handle more clients.\n");
-    else
+    if(query_thread!=NULL){
       pthread_create(query_thread,&thread_attributes,&handle_query,query_params);
-
-    if(query_thread)
       free(query_thread);
+    }
     free(id);
   }
 }
@@ -106,6 +109,7 @@ query_thread_params * new_query_params(){
   if(memerror(new_qtp,"query params"))
     return new_qtp;
   new_qtp->domain = malloc(256);
+  new_qtp->dns_server = malloc(256);
   new_qtp->addr = malloc(sizeof(struct sockaddr));
   if(memerror(new_qtp,"sockaddr"))
     free(new_qtp);

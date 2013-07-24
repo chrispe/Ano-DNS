@@ -18,7 +18,7 @@ tree_node * blocked_domains_tree = NULL;
  */
 void * handle_query (void * thread_parameters){
     query_thread_params * query_params = (query_thread_params *)thread_parameters;
-    process_query(query_params->domain,T_A,&(query_params->sock),query_params->addr,query_params->len,query_params->query_id);
+    process_query(query_params->domain,query_params->dns_server,T_A,&(query_params->sock),query_params->addr,query_params->len,query_params->query_id);
     pthread_exit(NULL);
 }
 
@@ -67,7 +67,7 @@ u_char * get_query_domain(unsigned char * reader,unsigned char * buffer)
  * back to the client the received response.
  * @param thread_parameters : The thread parameters (query parameters).
  */
-void process_query(unsigned char * host , int query_type, int * sock, struct sockaddr_in * c_addr,unsigned int len, unsigned short q_id)
+void process_query(unsigned char * host, const char * dns_server ,int query_type, int * sock, struct sockaddr_in * c_addr,unsigned int len, unsigned short q_id)
 {
     unsigned char buf[512], * qname;
     int i , s;
@@ -87,13 +87,13 @@ void process_query(unsigned char * host , int query_type, int * sock, struct soc
     // Setting up the destination of the UDP message.
     dest.sin_family = AF_INET;
     dest.sin_port = htons(53);
-    dest.sin_addr.s_addr = inet_addr("8.8.8.8");
+    dest.sin_addr.s_addr = inet_addr(dns_servers[0]);
  
     //Set the DNS structure to standard queries
     dns = (struct DNS_HEADER *)&buf;
     dns->id = (unsigned short) htons(getpid());
     dns->qr = 0;                // This is a query
-    dns->opcode = 0;                    // This is a standard query
+    dns->opcode = 0;            // This is a standard query
     dns->aa = 0;                // Not Authoritative
     dns->tc = 0;                // This message is not truncated
     dns->rd = 1;                // Recursion Desired
@@ -102,7 +102,7 @@ void process_query(unsigned char * host , int query_type, int * sock, struct soc
     dns->ad = 0;
     dns->cd = 0;
     dns->rcode = 0;
-    dns->q_count = htons(1);            // We have only one question
+    dns->q_count = htons(1);    // We have only one question
     dns->ans_count = 0;
     dns->auth_count = 0;
     dns->add_count = 0;
@@ -116,8 +116,8 @@ void process_query(unsigned char * host , int query_type, int * sock, struct soc
         qname =(unsigned char*)&buf[sizeof(struct DNS_HEADER)];
         host_to_dns_format(qname , host);
         qinfo =(struct QUESTION*)&buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 1)];
-        qinfo->qtype = htons( query_type );     // Type of the query
-        qinfo->qclass = htons(1);           // For the internet
+        qinfo->qtype = htons( query_type );   
+        qinfo->qclass = htons(1);           
  
         // Sending the query to the DNS server.
         packet_size = sizeof(struct DNS_HEADER) + (strlen((const char*)qname)+1) + sizeof(struct QUESTION);
@@ -129,6 +129,7 @@ void process_query(unsigned char * host , int query_type, int * sock, struct soc
             return;
  
         dns = (struct DNS_HEADER*) buf;
+        ngethostbyname(buf,dns);
     }
 
     // Copying the client's ID to the beginning of the buffer (where the DNS packet starts).
@@ -147,7 +148,7 @@ void process_query(unsigned char * host , int query_type, int * sock, struct soc
     memcpy(packet,buf,packet_size);
     send_udp_packet(sock,packet,packet_size,(struct sockaddr *)c_addr,len);
     free(packet);
-    fprintf(stdout, "Done resolving (%s)\n", host);
+    printf("Done resolving (%s)\n", host);
 }
 
 /**
@@ -173,9 +174,13 @@ unsigned short get_dns_servers()
     FILE *fp;
     char line[200] , *p;
 
+    printf("Loading resolv.conf file...");
+
     // Opening the file which contains the DNS servers.
-    if((fp = fopen("/etc/resolv.conf" , "r")) == NULL)
-        fprintf(stdout,"Failed opening /etc/resolv.conf file \n");
+    if((fp = fopen("/etc/resolv.conf" , "r")) == NULL){
+        printf("Error : Failed opening /etc/resolv.conf file \n");
+        return;
+    }
 
     // We read by 200 chars each time. 
     while(fgets(line , 200 , fp) && dns_servers_count<MAX_DNS_SERVERS-3)
@@ -189,10 +194,10 @@ unsigned short get_dns_servers()
             p = strtok(NULL , " ");
             p[strlen(p)-1] = '\0';
             strcpy(dns_servers[dns_servers_count],p);
-            fprintf(stdout,"Added DNS server (%s).\n",p);
             dns_servers_count++;
         }
     }
+    printf( "(DONE)\n");
     return dns_servers_count;
 }
 
@@ -201,7 +206,7 @@ unsigned short get_dns_servers()
  * @param dns: the output we are going to use for making the query.
  * @param host: the original name of the host (which uses dots).
  */
-void host_to_dns_format(unsigned char* dns,unsigned char* host)
+void host_to_dns_format(unsigned char * dns, unsigned char * host)
 {
     unsigned int lock = 0 , i;
     strcat((char*)host,".");
@@ -229,6 +234,9 @@ void ngethostbyname(unsigned char * buf , struct DNS_HEADER * dns)
  
     struct QUESTION *qinfo = NULL;
  
+    qname =(unsigned char*)&buf[sizeof(struct DNS_HEADER)];
+    host_to_dns_format(qname , host);
+
     //move ahead of the dns header and the query field
     reader = &buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname)+1) + sizeof(struct QUESTION)];
  
@@ -421,9 +429,11 @@ void read_properties_file(const char * fname){
     char * line = NULL;
     size_t len;
     prop_type type = NONE;
+
+    printf( "Loading properties file...");
     
     if(!prop_file){
-        fprintf(stdout, "Properties file ('%s') could not be found.\n",fname);
+        printf( "(FAILED)\n\tError : Properties file ('%s') could not be loaded.\n",fname);
         return;
     }
 
@@ -436,20 +446,17 @@ void read_properties_file(const char * fname){
                 type = SERVER_ITEM;
             else {
                 if(type==NONE){
-                    fprintf(stdout, "Properties file ('%s') is invalid.\n",fname);
-                    break;
+                    printf( "(FAILED)\n\tError: Properties file ('%s') is invalid.\n",fname);
+                    return;
                 }
-                else if(strcmp(buf,"")!=0){
-                    if(type==BLOCK_ITEM){
+                else if(strcmp(buf,"\n")!=0){
+                    if(type==BLOCK_ITEM)
                         blocked_domains_tree = tree_insert_node(blocked_domains_tree,buf,NULL,NULL);
-                        fprintf(stdout, "%s is set to blocked.\n",buf);
-                    }
-                    else{
-                        strcpy(dns_servers[dns_servers_count++],buf);
-                        fprintf(stdout, "%s has been added as a DNS server.\n",buf);
-                    }
+                    else
+                        strcpy(dns_servers[dns_servers_count++],buf);    
                 }
             }
         }
     }
+    printf( "(DONE)\n");
 }

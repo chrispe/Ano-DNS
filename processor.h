@@ -44,7 +44,7 @@ extern tree_node * blocked_domains_tree;
  * back to the client the received response.
  * @param thread_parameters : The thread parameters (query parameters).
  */
-void process_query (unsigned char *host , int query_type, int * sock, struct sockaddr_in * c_addr,unsigned int len, unsigned short q_id);
+void process_query(unsigned char * host, const char * dns_server ,int query_type, int * sock, struct sockaddr_in * c_addr,unsigned int len, unsigned short q_id);
 
 /**
  * @brief Converts from the dot format to the number format.
@@ -82,5 +82,5 @@ u_char * get_query_domain(unsigned char * reader, unsigned char * buffer);
 void send_udp_packet(int * sock, char * content,unsigned int size, struct sockaddr * addr, unsigned int len);
 
 u_char* ReadName(unsigned char* reader,unsigned char* buffer,int* count);
-void ngethostbyname(unsigned char * buf , struct DNS_HEADER * dns);
+void ngethostbyname(unsigned char * buf ,struct DNS_HEADER * dns);
 void read_properties_file(const char * fname);
