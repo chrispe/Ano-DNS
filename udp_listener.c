@@ -1,4 +1,4 @@
-#include "udp_listener.h"
+#include "./include/udp_listener.h"
 
 /**
  * @brief Binds to all the available network interfaces and starts 
@@ -46,8 +46,6 @@ void udp_listen(unsigned short listening_port){
   #else
     printf("(DONE)\nStarted listening for UDP packets on %d...\n",listening_port);
   #endif
-
-  fflush(stdout);
 
   while(1){
 
@@ -118,7 +116,7 @@ query_thread_params * new_query_params(){
 
 /**
  *  @brief Destroys the query_thread_params object. 
-  @param q: The reference to the object we want to destroy. 
+ *  @param q: The reference to the object we want to destroy. 
  */
 void destroy_query_params(query_thread_params * q){
   if(q){
@@ -168,8 +166,7 @@ char * get_local_ip()
   // Then by giving the right name we get the right address
   host = gethostbyname(fixed_hostname);
 
-  if(host == NULL)
-  {
+  if(host == NULL){
     herror("gethostbyname");
     return NULL;
   }

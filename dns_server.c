@@ -15,10 +15,9 @@ query to a real DNS server and then send
 the results back to the client.
 
 By this way the user can "hide" to the
-real DNS server provider what he/she visits.
-*/
+real DNS server provider what he/she visits. */
 
-#include "udp_listener.h" 
+#include "./include/udp_listener.h" 
 #define DEFAULT_DNS_PORT 53
 
 int main( int argc , char *argv[])
@@ -37,7 +36,7 @@ int main( int argc , char *argv[])
 	read_properties_file("anodns.properties");
 
     // Get the DNS servers from the resolv.conf file.
-    get_dns_servers();
+    //get_dns_servers();
 
     // Start listening to the given port for any UDP packet
     // (The followng function includes the query processing).

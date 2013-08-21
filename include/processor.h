@@ -14,6 +14,7 @@ for processing the query the client has sent.
 
 #include "sys_libs.h"
 #include "binary_tree.h"
+#include <time.h>
 #ifndef DNS_PACKET_SRUCT
 #include "dns_packet.h"
 #endif
@@ -84,3 +85,4 @@ void send_udp_packet(int * sock, char * content,unsigned int size, struct sockad
 u_char* ReadName(unsigned char* reader,unsigned char* buffer,int* count);
 void ngethostbyname(unsigned char * buf ,struct DNS_HEADER * dns);
 void read_properties_file(const char * fname);
+char * get_time_to_str();

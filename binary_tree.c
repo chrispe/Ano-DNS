@@ -1,4 +1,4 @@
-#include "binary_tree.h"
+#include "./include/binary_tree.h"
 
 /**
  * @brief Inserts a new node to the binary search tree.
