@@ -1,8 +1,6 @@
 Ano-DNS <small>0.1</small>
 ===========
 
-<h6>Developed by Chris Petropoulos</h6></br>
-
 <h4>Description</h4>
 <p>
 Ano-DNS acts as a DNS server. However, it is not a real DNS server.<br>
